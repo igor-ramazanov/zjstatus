@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use zjstatus::{
     config::{self, ModuleConfig, UpdateEventMask, ZellijState},
-    frames, pipe,
+    pipe,
     widgets::{
         command::{CommandResult, CommandWidget},
         datetime::DateTimeWidget,
@@ -200,16 +200,6 @@ impl State {
                 tracing::Span::current().record("event_type", "Event::PaneUpdate");
                 tracing::debug!(pane_count = ?pane_info.panes.len());
 
-                frames::hide_frames_conditionally(
-                    self.module_config.hide_frame_for_single_pane,
-                    self.module_config.hide_frame_except_for_search,
-                    self.module_config.hide_frame_except_for_fullscreen,
-                    &self.state.tabs,
-                    &pane_info,
-                    &self.state.mode,
-                    get_plugin_ids(),
-                );
-
                 self.state.panes = pane_info;
                 self.state.cache_mask = UpdateEventMask::Tab as u8;
 
@@ -255,20 +245,6 @@ impl State {
             }
             Event::SessionUpdate(session_info, _) => {
                 tracing::Span::current().record("event_type", "Event::SessionUpdate");
-
-                let current_session = session_info.iter().find(|s| s.is_current_session);
-
-                if let Some(current_session) = current_session {
-                    frames::hide_frames_conditionally(
-                        self.module_config.hide_frame_for_single_pane,
-                        self.module_config.hide_frame_except_for_search,
-                        self.module_config.hide_frame_except_for_fullscreen,
-                        &current_session.tabs,
-                        &current_session.panes,
-                        &self.state.mode,
-                        get_plugin_ids(),
-                    );
-                }
 
                 self.state.sessions = session_info;
                 self.state.cache_mask = UpdateEventMask::Session as u8;
